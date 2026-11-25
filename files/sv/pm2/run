@@ -1,0 +1,16 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# runit keeps pm2-runtime alive; pm2 keeps the apps in ~/sites/ecosystem.config.js alive.
+export HOME=/data/data/com.termux/files/home
+export PATH=/data/data/com.termux/files/usr/bin:$PATH
+
+# A hard-killed pm2-runtime (kill -9 / Android LMK) leaves its apps orphaned (ppid 1) and
+# still holding their ports, so the restarted pm2 could not start them again.
+for d in /proc/[0-9]*; do
+  [ "$(awk '/^PPid/{print $2}' $d/status 2>/dev/null)" = 1 ] || continue
+  case "$(readlink $d/cwd 2>/dev/null)" in
+    $HOME/sites/*) echo "killing orphan app pid ${d#/proc/}"; kill ${d#/proc/}; sleep 2 ;;
+  esac
+done
+
+# --no-auto-exit: pm2-runtime otherwise exits when no app is online (e.g. a fresh, empty server).
+exec node /data/data/com.termux/files/usr/lib/node_modules/pm2/bin/pm2-runtime --no-auto-exit $HOME/sites/ecosystem.config.js 2>&1

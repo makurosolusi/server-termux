@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# Idempotent (service-daemon uses a pidfile): safe from Termux:Boot, the job scheduler or by hand.
+export SVDIR=/data/data/com.termux/files/usr/var/service LOGDIR=/data/data/com.termux/files/usr/var/log
+echo "$(date "+%F %T") ensure-services by=${1:-job} $(uptime)" >> /data/data/com.termux/files/home/.termux/ensure.log
+termux-wake-lock
+# An openssh upgrade reinstalls sshd/down, which would keep sshd off after the next reboot.
+rm -f $SVDIR/sshd/down
+service-daemon start >/dev/null 2>&1 || true

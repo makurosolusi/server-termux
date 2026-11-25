@@ -1,0 +1,4 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# The tunnel (by UUID) and routes come from ~/.cloudflared/config.yml.
+export HOME=/data/data/com.termux/files/home
+exec cloudflared tunnel --no-autoupdate run 2>&1
