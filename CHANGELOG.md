@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0] - 2026-11-27
+
+### Added
+- Ready for Panel Termux: `~/sites/ecosystem.config.js` also loads the sites the panel creates from
+  `~/sites/apps.json` (installed as `[]`, never overwritten on rerun). A missing, empty or broken
+  `apps.json`, or an entry whose binary is not there yet, is skipped instead of stopping PM2.
+- `pm2-guard` keep-alive app (`sleep infinity`) so PM2 stays up on a phone with no sites yet.
+  Do not delete it; see `~/sites/README.md` ("Situs buatan panel").
+
+### Changed
+- The PM2 service exports `PM2_HOME=~/.pm2` explicitly.
+- Only new phones get the new template; phones already running keep their own `ecosystem.config.js`.
+
 ## [0.1.0] - 2026-11-25
 
 ### Added

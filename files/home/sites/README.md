@@ -21,6 +21,18 @@ runit (Termux:Boot) ─┬─ sshd, postgres, cloudflared
 
 > Tambah baris di tabel ini setiap kali menambah site.
 
+## Situs buatan panel
+
+Selain baris `site('<nama>')` yang kamu tulis sendiri, `ecosystem.config.js` juga memuat:
+
+- **`pm2-guard`**: app penjaga (`sleep infinity`, ±1 MB). pm2-runtime keluar bila tidak ada satu pun app saat
+  menyala, juga dengan `--no-auto-exit`, jadi penjaga ini menahannya hidup di HP yang belum punya situs.
+  **Jangan dihapus** dari `ecosystem.config.js` dan jangan `pm2 delete pm2-guard`.
+- **`apps.json`** (`~/sites/apps.json`): daftar situs buatan Panel Termux, dimuat otomatis oleh blok `panelApps`
+  di `ecosystem.config.js`. File ini **dikelola panel, jangan diedit tangan**. Bila hilang, kosong, atau rusak,
+  ecosystem tetap jalan tanpa situs panel; entri yang binary-nya belum ada dilewati.
+- Jangan hapus `app` situs panel lewat ssh tanpa menghapus situsnya di panel. Hapus situsnya dari panel.
+
 ## Isi folder sebuah site
 
 ```
@@ -32,7 +44,7 @@ runit (Termux:Boot) ─┬─ sshd, postgres, cloudflared
 
 | Apa | Lokasi |
 |---|---|
-| Daftar app PM2 | `~/sites/ecosystem.config.js` |
+| Daftar app PM2 | `~/sites/ecosystem.config.js` (+ situs panel di `~/sites/apps.json`) |
 | Log app | `~/.pm2/logs/<site>-out.log` dan `-error.log` (dirotasi `pm2-logrotate`: 10M, simpan 7) |
 | Service runit PM2 | `$PREFIX/var/service/pm2/run`, log di `$PREFIX/var/log/sv/pm2/current` |
 | Routing domain | `~/.cloudflared/config.yml` |

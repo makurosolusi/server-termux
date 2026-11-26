@@ -2,11 +2,11 @@
 
 Turn an Android phone into an always-on server for Bun single-binary web apps, the same way
 the POCO production phone is set up, minus the apps: sshd (key only), PostgreSQL (localhost),
-PM2 with an empty app list, and a Cloudflare Tunnel, all under runit. Everything starts on boot
+PM2 with no sites yet (only the `pm2-guard` keep-alive app), and a Cloudflare Tunnel, all under runit. Everything starts on boot
 via Termux:Boot and is rechecked every 15 minutes by termux-job-scheduler.
 
 `install.sh` is idempotent. Rerunning it repairs services without overwriting data, your app
-list (`~/sites/ecosystem.config.js`), the tunnel config or the docs on the phone.
+list (`~/sites/ecosystem.config.js`, `~/sites/apps.json`), the tunnel config or the docs on the phone.
 
 ## New phone
 
@@ -39,7 +39,8 @@ list (`~/sites/ecosystem.config.js`), the tunnel config or the docs on the phone
 |---|---|
 | `~/README.md`, `~/sites/README.md` | Operating guide: add a site, domain, database, backup |
 | `~/CLAUDE.md` (= `~/AGENTS.md`) | Rules for AI agents working on the phone |
-| `~/sites/ecosystem.config.js` | PM2 app list |
+| `~/sites/ecosystem.config.js` | PM2 app list (hand-written sites + `pm2-guard`, loads `apps.json`) |
+| `~/sites/apps.json` | Sites managed by Panel Termux (written by the panel) |
 | `$PREFIX/var/service/*` | runit services, logs in `$PREFIX/var/log/sv/*/current` |
 | `~/bin/ensure-services` | Boot + watchdog, log in `~/.termux/ensure.log` |
 
