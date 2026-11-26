@@ -1,5 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/sh
 # runit keeps pm2-runtime alive; pm2 keeps the apps in ~/sites/ecosystem.config.js alive.
+# Copied by scripts/install-phone.sh on a phone without a pm2 setup; same as files/sv/pm2/run in server-termux.
 export HOME=/data/data/com.termux/files/home
 export PATH=/data/data/com.termux/files/usr/bin:$PATH
 
@@ -12,5 +13,6 @@ for d in /proc/[0-9]*; do
   esac
 done
 
+export PM2_HOME=$HOME/.pm2
 # --no-auto-exit: pm2-runtime otherwise exits when no app is online (e.g. a fresh, empty server).
 exec node /data/data/com.termux/files/usr/lib/node_modules/pm2/bin/pm2-runtime --no-auto-exit $HOME/sites/ecosystem.config.js 2>&1

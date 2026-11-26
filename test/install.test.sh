@@ -33,6 +33,11 @@ sv=$PREFIX/var/service
 [ -x "$HOME/bin/ensure-services" ] && [ -x "$HOME/.termux/boot/start-services" ] || fail "boot scripts"
 [ -x "$sv/pm2/run" ] && [ -L "$sv/pm2/log/run" ] || fail "pm2 service"
 grep -q -- --no-auto-exit "$sv/pm2/run" || fail "pm2-runtime would exit with no apps"
+grep -qxF "export PM2_HOME=\$HOME/.pm2" "$sv/pm2/run" || fail "PM2_HOME not exported"
+eco=$HOME/sites/ecosystem.config.js
+cmp -s "$eco" "$repo/files/sites/ecosystem.config.js" || fail "ecosystem template not installed as is"
+for w in panelApps existsSync pm2-guard 'require("./apps.json")'; do grep -qF "$w" "$eco" || fail "template lacks $w"; done
+[ "$(cat "$HOME/sites/apps.json")" = '[]' ] || fail "apps.json not []"
 [ -f "$sv/cloudflared/down" ] || fail "cloudflared must stay down without a tunnel"
 grep -q 'cloudflared tunnel login' "$t/out" || fail "tunnel todo not printed"
 grep -q 'PasswordAuthentication no' "$PREFIX/etc/ssh/sshd_config.d/10-key-only.conf" || fail "key-only"
@@ -44,10 +49,12 @@ grep -q 'sv -w 30 check sshd postgres pm2$' "$STUB_LOG" || fail "check"
 
 # 3. repair rerun: nothing reinstalled, user edits kept, no duplicate key
 echo edited > "$HOME/README.md"; echo '// mine' > "$HOME/sites/ecosystem.config.js"
+echo '[{"name":"panel-site"}]' > "$HOME/sites/apps.json"
 : > "$STUB_LOG"
 run srv1
 grep -q '^pkg' "$STUB_LOG" && fail "rerun reinstalled packages"
 [ "$(cat "$HOME/README.md")" = edited ] && [ "$(cat "$HOME/sites/ecosystem.config.js")" = '// mine' ] || fail "user files overwritten"
+[ "$(cat "$HOME/sites/apps.json")" = '[{"name":"panel-site"}]' ] || fail "apps.json overwritten"
 [ "$(grep -c . "$HOME/.ssh/authorized_keys")" = 1 ] || fail "key duplicated"
 
 # 4. after `cloudflared tunnel login`: tunnel created, config by UUID, service enabled
@@ -57,5 +64,23 @@ grep -q "^tunnel: $uuid\$" "$HOME/.cloudflared/config.yml" || fail "config.yml t
 grep -q 'http_status:404' "$HOME/.cloudflared/config.yml" || fail "config.yml ingress"
 [ ! -f "$sv/cloudflared/down" ] || fail "cloudflared still down"
 grep -q 'check sshd postgres pm2 cloudflared' "$STUB_LOG" || fail "cloudflared not checked"
+
+# 5. the template keeps exactly pm2-guard (+ hand-written and runnable panel apps) whatever apps.json holds
+if command -v node >/dev/null; then
+  e=$t/eco; mkdir -p "$e/s1"; touch "$e/s1/app"
+  cp "$repo/files/sites/ecosystem.config.js" "$e/"
+  names() { node -e 'console.log(require(process.argv[1]).apps.map((a) => a.name).join(","))' "$1" 2>/dev/null; }
+  expect() { got=$(names "$e/ecosystem.config.js"); [ "$got" = "$1" ] || fail "$2: got '$got', want '$1'"; }
+  expect pm2-guard "apps.json missing"
+  echo '[{"name":' > "$e/apps.json"; expect pm2-guard "apps.json corrupt"
+  echo '{"name":"x"}' > "$e/apps.json"; expect pm2-guard "apps.json not a list"
+  echo '[{"name":"s0","cwd":"'"$e"'/s0","script":"./app"},null,{"cwd":"'"$e"'/s1","script":"./app"}]' > "$e/apps.json"
+  expect pm2-guard "entry without binary or name"
+  echo '[{"name":"s1","cwd":"'"$e"'/s1","script":"./app"}]' > "$e/apps.json"; expect pm2-guard,s1 "runnable panel app"
+  sed "s|// site('blog'),|site('blog'),|" "$repo/files/sites/ecosystem.config.js" > "$e/ecosystem.config.js"
+  expect pm2-guard,blog,s1 "hand-written app"
+else
+  echo "install.test: node not found, ecosystem check skipped"
+fi
 
 echo "install.test: all passed"

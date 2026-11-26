@@ -60,6 +60,7 @@ step pm2
 command -v pm2 >/dev/null || npm install -g pm2
 mkdir -p "$HOME/sites"
 put_once sites/ecosystem.config.js "$HOME/sites/ecosystem.config.js"
+put_once sites/apps.json "$HOME/sites/apps.json"
 if [ ! -d "$HOME/.pm2/modules/pm2-logrotate" ]; then
   pm2 install pm2-logrotate >/dev/null
   pm2 set pm2-logrotate:max_size 10M >/dev/null
