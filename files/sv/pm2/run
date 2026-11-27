@@ -1,6 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/sh
 # runit keeps pm2-runtime alive; pm2 keeps the apps in ~/sites/ecosystem.config.js alive.
-# Copied by scripts/install-phone.sh on a phone without a pm2 setup; same as files/sv/pm2/run in server-termux.
+# Installed on a phone without a pm2 setup by server-termux install.sh or by `panel init`
+# (embedded in the binary); files/sv/pm2/run in server-termux is the source.
 export HOME=/data/data/com.termux/files/home
 export PATH=/data/data/com.termux/files/usr/bin:$PATH
 

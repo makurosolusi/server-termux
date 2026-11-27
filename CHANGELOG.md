@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1] - 2026-11-27
+
+### Changed
+- The comments in `~/sites/ecosystem.config.js` and the PM2 service run script are now in English,
+  and a broken `apps.json` is logged as `[ecosystem] apps.json skipped: …` (was `apps.json dilewati: …`).
+  Only new phones get the new text; nothing else in the templates changed, and Panel Termux still
+  accepts the previous template as it is.
+
 ## [0.2.0] - 2026-11-27
 
 ### Added

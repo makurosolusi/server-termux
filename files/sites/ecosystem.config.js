@@ -1,11 +1,11 @@
-// Daftar app yang dijalankan PM2 di HP ini. Tambah site('<nama>') untuk situs yang kamu tulis sendiri.
-// Situs buatan Panel Termux ada di apps.json dan dimuat otomatis oleh blok panelApps di bawah.
-// Sumber: PLAN/03 §7.2, sama dengan files/sites/ecosystem.config.js di repo server-termux.
+// The apps PM2 runs on this phone. Add site('<name>') for a site you wrote yourself.
+// Sites created by Panel Termux are in apps.json and loaded automatically by the panelApps block below.
+// Source: PLAN/03 §7.2, same as files/sites/ecosystem.config.js in the server-termux repo.
 const SITES = "/data/data/com.termux/files/home/sites";
 const PREFIX = "/data/data/com.termux/files/usr";
 
-// Binary Bun glibc dijalankan lewat grun; .env di folder situs dibaca binary saat start.
-// biome-ignore lint/correctness/noUnusedVariables: dipakai saat pemilik membuka komentar site('<nama>') di bawah.
+// The glibc Bun binary runs through grun; the binary reads the .env in the site folder at start.
+// biome-ignore lint/correctness/noUnusedVariables: used once the owner uncomments site('<name>') below.
 const site = (name) => ({
   name,
   cwd: `${SITES}/${name}`,
@@ -15,9 +15,9 @@ const site = (name) => ({
   exp_backoff_restart_delay: 1000,
 });
 
-// Panel Termux: situs buatan panel tercatat di apps.json (dikelola panel, jangan diedit tangan).
-// Aman bila apps.json belum ada, kosong, atau rusak; entri yang binary-nya belum ada dilewati,
-// karena satu script yang hilang membuat pm2-runtime menghentikan semua aplikasi.
+// Panel Termux: sites created by the panel are listed in apps.json (managed by the panel, do not edit by hand).
+// Safe when apps.json is missing, empty or broken; entries whose binary does not exist yet are skipped,
+// because one missing script makes pm2-runtime stop every app.
 const panelApps = (() => {
   try {
     const fs = require("fs");
@@ -29,13 +29,13 @@ const panelApps = (() => {
         )
       : [];
   } catch (e) {
-    console.error(`[ecosystem] apps.json dilewati: ${e.message}`);
+    console.error(`[ecosystem] apps.json skipped: ${e.message}`);
     return [];
   }
 })();
 
-// pm2-runtime keluar bila ecosystem tidak punya aplikasi saat start, juga dengan --no-auto-exit.
-// Penjaga ini (sleep, ±1 MB) menahannya hidup di HP yang belum punya situs. Jangan dihapus.
+// pm2-runtime exits when the ecosystem has no app at start, even with --no-auto-exit.
+// This keeper (sleep, ~1 MB) keeps it alive on a phone with no sites yet. Do not delete it.
 const guard = {
   name: "pm2-guard",
   script: `${PREFIX}/bin/sleep`,
