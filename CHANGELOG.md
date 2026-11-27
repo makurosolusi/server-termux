@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2026-11-28
+
+### Changed
+- `~/sites/README.md` is now written in English. The Indonesian version is kept in the repo as
+  `files/home/sites/README.id.md` (not installed on the phone). Only new phones get the new text.
+
 ## [0.2.1] - 2026-11-27
 
 ### Changed
